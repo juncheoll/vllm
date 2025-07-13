@@ -1496,6 +1496,8 @@ class BatchScheduler(Scheduler):
 
             # requests in the scheduled_queue can also be preempted or finished.
             if self.requests[req_id].status >= RequestStatus.PREEMPTED:
+                if self.requests[req_id].is_finished():
+                    logger.info(f"pass the finished request, id {req_id}")
                 continue
 
             token_budget -= num_new_tokens
@@ -1572,6 +1574,8 @@ class BatchScheduler(Scheduler):
             batch = KVEventBatch(ts=time.time(), events=events)
             self.kv_event_publisher.publish(batch)
 
+        if self.finished_req_ids:
+            logger.info(f"finished_req_ids of current scheduled : {self.finished_req_ids}")
         self.finished_req_ids = set()
         return scheduler_output
 
